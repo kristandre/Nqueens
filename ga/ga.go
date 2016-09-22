@@ -12,7 +12,7 @@ import (
 
 const (
 	mutationProb float32 = 0.001
-	runtime = 30
+	runtime = 60
 	tournamentSize int = 20
 	populationSize int = 50
 	workerCount = 10
@@ -158,15 +158,18 @@ func createMutatedPopulation(queens []int) Population {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	queens := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
+	start := time.Now()
+
+	queens := util.GetQueensFromInput()
 	size = len(queens)
 	availableRows = util.GetAvailableRows(size)
-	start := time.Now()
+
 	wg.Add(workerCount)
 	for i := 0; i < workerCount; i++ {
 		go findSolutions(queens)
 	}
 	wg.Wait()
+
 	//fmt.Println("TOURNAMENT_SIZE", TOURNAMENT_SIZE, "Run", j + 1, ":", solutions.Size, "solutions found")
 	elapsed := time.Since(start)
 	fmt.Println(size, "queens")

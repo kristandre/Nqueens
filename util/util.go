@@ -1,5 +1,13 @@
 package util
 
+import (
+	"fmt"
+	"os"
+	"bufio"
+	"strings"
+	"strconv"
+)
+
 func IndexOf(needle int, haystack []int) int {
 	for i, item := range haystack {
 		if item == needle {
@@ -93,4 +101,43 @@ func PrepareBoard(queens []int) []int {
 		DeleteItem(availableRows[0], availableRows)
 	}
 	return queens
+}
+
+func GetQueensFromInput() []int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Insert Size: ")
+	_, err := reader.ReadString('\n')
+
+	fmt.Print("Insert Queens: ")
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		panic(err)
+	}
+
+	queensStrList := strings.Split(strings.TrimSpace(text), " ")
+	queens :=[]int{}
+
+	for _, queenStr := range queensStrList {
+		queen, _ := strconv.Atoi(queenStr)
+		queens = append(queens, queen - 1)
+	}
+
+	return PrepareBoard(queens)
+}
+
+func PrintSolutionsToFile(solutions [][]int, filename string) {
+	fo, _ := os.Create(filename)
+	defer fo.Close()
+	w := bufio.NewWriter(fo)
+	w.WriteString("Number of solutions: " + strconv.Itoa(len(solutions)) + "\n\n")
+	for _, queens := range solutions {
+		for i, q := range queens {
+			w.WriteString(strconv.Itoa(q + 1))
+			if i < len(queens) - 1 {
+				w.WriteString(" ")
+			}
+		}
+		w.WriteString("\n")
+	}
+	w.Flush()
 }

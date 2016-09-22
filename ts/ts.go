@@ -22,7 +22,7 @@ func (p *Pair) getKey() string {
 }
 
 const (
-  runTime = 10
+  runTime = 60
   workerCount = 10
   tabuNum = 10
   seldomSwapProb = 0.0075
@@ -178,11 +178,12 @@ func getSwapMapKeys(m map[int][]Pair) []int {
 }
 
 func main() {
-  start := time.Now()
   rand.Seed(time.Now().UnixNano())
-  queens := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
+  queens := util.GetQueensFromInput()
   size = len(queens)
-  queens = util.PrepareBoard(queens)
+
+  start := time.Now()
+
   wg.Add(workerCount)
   for i := 0; i < workerCount; i++ {
     q := make([]int, len(queens))
@@ -190,6 +191,9 @@ func main() {
     go tabuSearch(q)
   }
   wg.Wait()
+
+  util.PrintSolutionsToFile(solutions.GetSolutions(), "TS30.txt")
+
   elapsed := time.Since(start)
   fmt.Println(size, "queens")
   fmt.Println(solutions.Size, "solutions")

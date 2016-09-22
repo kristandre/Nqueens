@@ -11,8 +11,10 @@ import (
 )
 
 const(
-	runtime = 10
+	runtime = 60
 	workerCount = 10
+	startTemp = 0.05
+	dt = 0.0001
 )
 
 var (
@@ -48,9 +50,10 @@ func swap(queens []int, queenIndex1, queenIndex2 int) []int {
 	return queensCopy
 }
 
-func sa_search(startQueens []int, temp, dt float32) []int {
+func sa_search(startQueens []int) []int {
 	currentQueens := startQueens
 	currentEval := util.EvaluateBoard(startQueens)
+	temp := startTemp
 	for temp > 0 {
 		if currentEval == 0 {
 			return currentQueens
@@ -94,22 +97,24 @@ func findSolutions(queens []int) {
 	defer wg.Done()
 	startTime := time.Now()
 	for time.Since(startTime) / 1000000000 < runtime {
-		queens := sa_search(queens, 0.05, 0.000001)
+		queens := sa_search(queens)
 		addSolution(queens)
 	}
 }
 
 func main() {
-	start := time.Now()
 	rand.Seed(time.Now().UnixNano())
-	queens := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
+	queens := util.GetQueensFromInput()
 	size = len(queens)
+
+	start := time.Now()
 
 	wg.Add(workerCount)
 	for i := 0; i < workerCount; i++ {
 		go findSolutions(queens)
 	}
 	wg.Wait()
+
 	elapsed := time.Since(start)
 	fmt.Println(size, "queens")
 	fmt.Println(solutions.Size, "solutions")

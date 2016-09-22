@@ -1,9 +1,10 @@
 package solution
 
 import (
-	"fmt"
-	"strings"
+	//"fmt"
+	//"strings"
 )
+//import "fmt"
 
 type SolutionTree struct {
 	Children map[int]SolutionTree
@@ -43,17 +44,25 @@ func (s *SolutionTree) AddQueens(queens []int) bool {
 	return isNewSolution
 }
 
-func (solutions *SolutionTree) ToString() string {
-	s := ""
-	if solutions.Queen >= 0 {
-		s += fmt.Sprintf("%d ", solutions.Queen + 1)
-	}
+func (solutions *SolutionTree) GetSolutions() [][]int {
+	allSolutions := [][]int{}
+	var me int
+	me = solutions.Queen
 	if len(solutions.Children) > 0 {
 		for _, child := range solutions.Children {
-			s += child.ToString()
+			childSolutions := child.GetSolutions()
+			for _, childSolution := range childSolutions {
+				x := []int{}
+				if (me >= 0) {
+					x = append(x, me)
+				}
+				x = append(x, childSolution...)
+				allSolutions = append(allSolutions, x)
+			}
 		}
 	} else {
-		s += fmt.Sprintln("")
+		h := []int{solutions.Queen}
+		allSolutions = append(allSolutions, h)
 	}
-	return strings.TrimSpace(s)
+	return allSolutions
 }

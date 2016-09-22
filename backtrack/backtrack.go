@@ -83,7 +83,7 @@ func backtrackAllSolutionsMT(availableRows, queens []int, col, start int, wg *sy
 	}
 }
 
-func mtbt(availableRows, queens []int, col int){
+func multiThreadBackTracking(availableRows, queens []int, col int){
 	N := len(queens)
 	var wg sync.WaitGroup
 	for _,row := range availableRows {
@@ -103,17 +103,18 @@ func mtbt(availableRows, queens []int, col int){
 }
 
 func main(){
-	queens := []int{1, 3, 5, 7, -1, -1, -1, -1}
-	//queens := []int{0, 6, 1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
+	queens := util.GetQueensFromInput()
 	availableRows := getAvailableRows(queens)
 	firstEmptyColumn := getFirstEmptyColumn(queens)
+
 	start := time.Now()
-	//mtbt(availableRows, queens, firstEmptyColumn)
-	oneSolution := backtrackOneSolution(availableRows, queens, firstEmptyColumn, firstEmptyColumn)
+	multiThreadBackTracking(availableRows, queens, firstEmptyColumn)
+	//oneSolution := backtrackOneSolution(availableRows, queens, firstEmptyColumn, firstEmptyColumn)
+
 	elapsed := time.Since(start)
 	fmt.Println(len(queens), "queens")
-	fmt.Println("solution", oneSolution)
-	//fmt.Println(solutions.Size, "solutions")
+	//fmt.Println("solution", oneSolution)
+	fmt.Println(solutions.Size, "solutions")
 	fmt.Println("Execution time:", elapsed)
 }
 

@@ -115,3 +115,4 @@ func runEvaluateBoardTest(input []int, expectedOutput int, t *testing.T) {
 		t.Fatalf("expected %d crashes, but got %d crashes", expectedOutput, crashCount)
 	}
 }
+
