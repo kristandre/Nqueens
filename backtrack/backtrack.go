@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 	"sync"
-	"github.com/kristandre/Nqueens/util"
-	"github.com/kristandre/Nqueens/solution"
+	"../util"
+	"../solution"
 )
 
 func isValidPosition(queens []int, row, col int) bool {

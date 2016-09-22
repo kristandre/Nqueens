@@ -5,7 +5,6 @@ import (
   "time"
   "sync"
   "../util"
-  "github.com/pkg/profile"
   "../solution"
   "fmt"
   "math"
@@ -23,13 +22,14 @@ func (p *Pair) getKey() string {
 }
 
 const (
-  runTime = 15
+  runTime = 10
   workerCount = 10
+  tabuNum = 10
+  seldomSwapProb = 0.0075
 )
 
 var (
-  tabuNum = 4
-  SIZE = 0
+  size = 0
   solutions = solution.SolutionTree{Queen: -1}
 
   wg sync.WaitGroup
@@ -85,7 +85,7 @@ func createSwapList(queens []int, row int) map[int][]Pair {
 
 func evaluateSwap(queens []int, pair Pair) int {
   crashesBefore := util.EvaluateBoard(queens)
-  queensCopy := make([]int, SIZE)
+  queensCopy := make([]int, size)
   copy(queensCopy, queens)
   queensCopy = swap(queensCopy, pair)
   crashesAfter := util.EvaluateBoard(queensCopy)
@@ -128,14 +128,14 @@ func swap(queens []int, pair Pair) []int {
 
 func tabuSearch(queens []int) {
   defer wg.Done()
-  tabuList := initializeTabuList(SIZE)
-  longTermMem := initializeTabuList(SIZE)
+  tabuList := initializeTabuList(size)
+  longTermMem := initializeTabuList(size)
   startTime := time.Now()
   nextQueen := 0
   tabuQueens := queens
   for time.Since(startTime) / 1000000000 < runTime {
-    if rand.Float32() < 0.075 {
-      // Swap a seldom pair
+    if rand.Float32() < seldomSwapProb {
+      // Swap a seldom selected pair
       fewestPair := getFewestSwapsPair(longTermMem, tabuList)
       tabuQueens = swap(tabuQueens, fewestPair)
       decTabuList(tabuList)
@@ -179,10 +179,9 @@ func getSwapMapKeys(m map[int][]Pair) []int {
 
 func main() {
   start := time.Now()
-  defer profile.Start().Stop()
   rand.Seed(time.Now().UnixNano())
   queens := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
-  SIZE = len(queens)
+  size = len(queens)
   queens = util.PrepareBoard(queens)
   wg.Add(workerCount)
   for i := 0; i < workerCount; i++ {
@@ -190,29 +189,9 @@ func main() {
     copy(q, queens)
     go tabuSearch(q)
   }
-  SAMPLE_SIZE := 20
-  for k := 0; k < 11; k++ {
-    tabuNum += 1
-    totalSolutions := 0
-    for j := 0; j < SAMPLE_SIZE; j++ {
-      queens := rand.Perm(SIZE)
-      wg.Add(workerCount)
-      for i := 0; i < workerCount; i++ {
-        q := make([]int, len(queens))
-        copy(q, queens)
-        go tabuSearch(q)
-      }
-      wg.Wait()
-      //fmt.Println("TOURNAMENT_SIZE", TOURNAMENT_SIZE, "Run", j + 1, ":", solutions.Size, "solutions found")
-      totalSolutions += solutions.Size
-      solutions = solution.SolutionTree{Queen:-1}
-    }
-    fmt.Println("TABU_SIZE", tabuNum, "Avg solutions:", totalSolutions / SAMPLE_SIZE)
-  }
   wg.Wait()
   elapsed := time.Since(start)
-  fmt.Println(SIZE, "queens")
+  fmt.Println(size, "queens")
   fmt.Println(solutions.Size, "solutions")
   fmt.Println("Execution time:", elapsed)
-
 }

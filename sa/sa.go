@@ -7,24 +7,24 @@ import (
 	"math"
 	"sync"
 	"../util"
-	"github.com/pkg/profile"
 	"../solution"
 )
 
+const(
+	runtime = 10
+	workerCount = 10
+)
+
 var (
-	SIZE = 0
-	counter = 0
-	timeInFunc = 0
+	size = 0
 	solutions = solution.SolutionTree{Queen: -1}
 
-	SOLUTION_GOAL = 300000
-	WORKER_COUNT = 10
 	wg sync.WaitGroup
 	mutex sync.Mutex
 )
 
 func getRandomIndex() int {
-	return rand.Intn(SIZE)
+	return rand.Intn(size)
 }
 
 func generateNeighbour(queens []int) []int {
@@ -38,7 +38,7 @@ func generateNeighbour(queens []int) []int {
 }
 
 func swap(queens []int, queenIndex1, queenIndex2 int) []int {
-	queensCopy := make([]int, SIZE)
+	queensCopy := make([]int, size)
 	copy(queensCopy, queens)
 	queen1 := queensCopy[queenIndex1]
 	queen2 := queensCopy[queenIndex2]
@@ -52,7 +52,6 @@ func sa_search(startQueens []int, temp, dt float32) []int {
 	currentQueens := startQueens
 	currentEval := util.EvaluateBoard(startQueens)
 	for temp > 0 {
-		counter++
 		if currentEval == 0 {
 			return currentQueens
 		}
@@ -93,7 +92,8 @@ func addSolution(solution []int) {
 
 func findSolutions(queens []int) {
 	defer wg.Done()
-	for solutions.Size < SOLUTION_GOAL {
+	startTime := time.Now()
+	for time.Since(startTime) / 1000000000 < runtime {
 		queens := sa_search(queens, 0.05, 0.000001)
 		addSolution(queens)
 	}
@@ -101,22 +101,17 @@ func findSolutions(queens []int) {
 
 func main() {
 	start := time.Now()
-	defer profile.Start().Stop()
 	rand.Seed(time.Now().UnixNano())
 	queens := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
-	SIZE = len(queens)
+	size = len(queens)
 
-	wg.Add(WORKER_COUNT)
-	for i := 0; i < WORKER_COUNT; i++ {
+	wg.Add(workerCount)
+	for i := 0; i < workerCount; i++ {
 		go findSolutions(queens)
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
-	fmt.Println(SIZE, "queens")
+	fmt.Println(size, "queens")
 	fmt.Println(solutions.Size, "solutions")
-	//fmt.Println(solutions.ToString())
-	fmt.Println(float32(float32(timeInFunc) / 1000000.0), "in func")
 	fmt.Println("Execution time:", elapsed)
-	fmt.Println(counter, "rounds in sa")
-	//fmt.Println(solutions)
 }
