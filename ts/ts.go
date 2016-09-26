@@ -22,18 +22,20 @@ func (p *Pair) getKey() string {
 }
 
 const (
-  runTime = 60
-  workerCount = 10
+  runTime = 6
   tabuNum = 10
   seldomSwapProb = 0.0075
 )
 
 var (
+  workerCount = 10
   size = 0
   solutions = solution.SolutionTree{Queen: -1}
 
   wg sync.WaitGroup
   mutex sync.Mutex
+
+  printQueens = false
 )
 
 func addSolution(s []int) {
@@ -137,7 +139,18 @@ func tabuSearch(queens []int) {
     if rand.Float32() < seldomSwapProb {
       // Swap a seldom selected pair
       fewestPair := getFewestSwapsPair(longTermMem, tabuList)
+      if printQueens {
+        fmt.Println("Long Term Memory List")
+        fmt.Println("Board(", util.EvaluateBoard(queens), ")", queens)
+        fmt.Println("Swapping ", fewestPair.x, "with", fewestPair.y)
+      }
       tabuQueens = swap(tabuQueens, fewestPair)
+      if printQueens {
+        crashes := util.EvaluateBoard(tabuQueens)
+        printQueens = crashes > 0
+        fmt.Println("Result(", crashes, ")", tabuQueens)
+        fmt.Println("-----------------------")
+      }
       decTabuList(tabuList)
       tabuList[fewestPair.getKey()] = tabuNum
       longTermMem[fewestPair.getKey()]++
@@ -152,7 +165,17 @@ func tabuSearch(queens []int) {
         if tabuList[pair.getKey()] > 0 {
           continue
         }
+        if printQueens {
+          fmt.Println("Board(", util.EvaluateBoard(queens), ")", queens)
+          fmt.Println("Swapping ", pair.x, "with", pair.y)
+        }
         q := swap(tabuQueens, pair)
+        if printQueens {
+          crashes := util.EvaluateBoard(q)
+          printQueens = crashes > 0
+          fmt.Println("Result(", crashes, ")", q)
+          fmt.Println("-----------------------")
+        }
         tabuQueens = q
         decTabuList(tabuList)
         tabuList[pair.getKey()] = tabuNum
@@ -183,6 +206,10 @@ func main() {
   size = len(queens)
 
   start := time.Now()
+
+  if printQueens {
+    workerCount = 1
+  }
 
   wg.Add(workerCount)
   for i := 0; i < workerCount; i++ {

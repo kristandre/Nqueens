@@ -14,7 +14,7 @@ const(
 	runtime = 60
 	workerCount = 10
 	startTemp = 0.05
-	dt = 0.0001
+	dt = 0.00001
 )
 
 var (
@@ -23,7 +23,10 @@ var (
 
 	wg sync.WaitGroup
 	mutex sync.Mutex
+
 )
+
+const printQueens = true
 
 func getRandomIndex() int {
 	return rand.Intn(size)
@@ -60,7 +63,15 @@ func sa_search(startQueens []int) []int {
 		}
 		neighbour := generateNeighbour(currentQueens)
 		neighbourEval := util.EvaluateBoard(neighbour)
+		if printQueens {
+			fmt.Println("Current   board(", currentEval, ")", currentQueens)
+			fmt.Println("Neighbour board(", neighbourEval, ")", neighbour)
+			fmt.Println("------------------------------")
+		}
 		if neighbourEval == 0 {
+			if printQueens {
+				fmt.Println("Solution board(", neighbourEval, ")", neighbour)
+			}
 			return neighbour
 		}
 		if neighbourEval < currentEval {
@@ -109,14 +120,20 @@ func main() {
 
 	start := time.Now()
 
-	wg.Add(workerCount)
-	for i := 0; i < workerCount; i++ {
-		go findSolutions(queens)
+	if printQueens {
+		sa_search(queens)
+	} else {
+		wg.Add(workerCount)
+		for i := 0; i < workerCount; i++ {
+			go findSolutions(queens)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 
 	elapsed := time.Since(start)
-	fmt.Println(size, "queens")
-	fmt.Println(solutions.Size, "solutions")
+	if !printQueens {
+		fmt.Println(size, "queens")
+		fmt.Println(solutions.Size, "solutions")
+	}
 	fmt.Println("Execution time:", elapsed)
 }

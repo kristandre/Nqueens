@@ -15,7 +15,6 @@ const (
 	runtime = 60
 	tournamentSize int = 20
 	populationSize int = 50
-	workerCount = 10
 )
 
 var (
@@ -25,6 +24,9 @@ var (
 	availableRows = []int{}
 	wg sync.WaitGroup
 	mutex sync.Mutex
+	workerCount = 10
+
+	printQueens = true
 )
 
 type Board struct {
@@ -102,7 +104,7 @@ func tournamentSelection(k int, population Population) Population {
 		children = append(children, child)
 		population[PopulationIndexOf(glad, population)] = child
 	}
-	return children
+	return population
 }
 
 func tournamentCrossover(mom, dad []int) Board {
@@ -137,6 +139,13 @@ func findSolutions(queens []int) {
 	population := createMutatedPopulation(queens)
 	for time.Since(startTime) / 1000000000 < runtime {
 		tournamentSelection(tournamentSize, population)
+		if printQueens {
+			if solutions.Size > 0 {
+				printQueens = false
+			}
+			sort.Sort(population)
+			fmt.Println(population[:3])
+		}
 	}
 }
 
@@ -163,6 +172,10 @@ func main() {
 	queens := util.GetQueensFromInput()
 	size = len(queens)
 	availableRows = util.GetAvailableRows(size)
+
+	if printQueens {
+		workerCount = 1
+	}
 
 	wg.Add(workerCount)
 	for i := 0; i < workerCount; i++ {

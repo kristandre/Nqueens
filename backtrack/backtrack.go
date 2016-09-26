@@ -6,6 +6,10 @@ import (
 	"sync"
 	"../util"
 	"../solution"
+	"bufio"
+	"os"
+	"strings"
+	"strconv"
 )
 
 func isValidPosition(queens []int, row, col int) bool {
@@ -22,6 +26,7 @@ func isValidPosition(queens []int, row, col int) bool {
 
 var solutions = solution.SolutionTree{Queen:-1}
 var mutex sync.Mutex
+var printQueens = false
 
 
 func addSolution(solution []int) {
@@ -44,6 +49,8 @@ func backtrackOneSolution(availableRows, queens []int, col, start int) []int {
 
 			availableRowsCopy = util.DeleteItem(row, availableRowsCopy)
 			queensCopy[col] = row
+
+			fmt.Println(queensCopy)
 
 			if col == size - 1 {
 				return queensCopy
@@ -102,19 +109,56 @@ func multiThreadBackTracking(availableRows, queens []int, col int){
 	wg.Wait()
 }
 
+func getInput() []int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Insert Size: ")
+	_, err := reader.ReadString('\n')
+
+	fmt.Print("Insert Queens: ")
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Print("Print output? Y/N: ")
+	printInput, err := reader.ReadString('\n')
+	if err != nil {
+		panic(err)
+	}
+	printQueens = strings.ToLower(printInput) == "y\n"
+
+	queensStrList := strings.Split(strings.TrimSpace(text), " ")
+	queens :=[]int{}
+
+	for _, queenStr := range queensStrList {
+		queen, _ := strconv.Atoi(queenStr)
+		queens = append(queens, queen - 1)
+	}
+
+	return queens
+}
+
 func main(){
-	queens := util.GetQueensFromInput()
+	queens := getInput()
+
+	if printQueens {
+		fmt.Println("Start board:", queens)
+	}
+
 	availableRows := getAvailableRows(queens)
 	firstEmptyColumn := getFirstEmptyColumn(queens)
 
 	start := time.Now()
-	multiThreadBackTracking(availableRows, queens, firstEmptyColumn)
-	//oneSolution := backtrackOneSolution(availableRows, queens, firstEmptyColumn, firstEmptyColumn)
+	if printQueens {
+		oneSolution := backtrackOneSolution(availableRows, queens, firstEmptyColumn, firstEmptyColumn)
+		fmt.Println("solution", oneSolution)
+	} else {
+		multiThreadBackTracking(availableRows, queens, firstEmptyColumn)
+		fmt.Println(len(queens), "queens")
+		fmt.Println(solutions.Size, "solutions")
+	}
 
 	elapsed := time.Since(start)
-	fmt.Println(len(queens), "queens")
-	//fmt.Println("solution", oneSolution)
-	fmt.Println(solutions.Size, "solutions")
 	fmt.Println("Execution time:", elapsed)
 }
 
