@@ -8,6 +8,7 @@ import (
 	"../util"
 	"sync"
 	"../solution"
+	"strconv"
 )
 
 const (
@@ -26,7 +27,7 @@ var (
 	mutex sync.Mutex
 	workerCount = 10
 
-	printQueens = true
+	printQueens = false
 )
 
 type Board struct {
@@ -183,11 +184,12 @@ func main() {
 	}
 	wg.Wait()
 
-	//fmt.Println("TOURNAMENT_SIZE", TOURNAMENT_SIZE, "Run", j + 1, ":", solutions.Size, "solutions found")
 	elapsed := time.Since(start)
 	fmt.Println(size, "queens")
 	fmt.Println(solutions.Size, "solutions")
 	fmt.Println("Execution time:", elapsed)
+
+	util.PrintSolutionsToFile(solutions.GetSolutions(), "results/GA" + strconv.Itoa(size) + ".txt")
 
 }
 

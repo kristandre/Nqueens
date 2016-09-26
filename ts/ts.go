@@ -219,7 +219,7 @@ func main() {
   }
   wg.Wait()
 
-  util.PrintSolutionsToFile(solutions.GetSolutions(), "TS30.txt")
+  util.PrintSolutionsToFile(solutions.GetSolutions(), "results/TS" + strconv.Itoa(size) + ".txt")
 
   elapsed := time.Since(start)
   fmt.Println(size, "queens")

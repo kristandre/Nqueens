@@ -8,6 +8,7 @@ import (
 	"sync"
 	"../util"
 	"../solution"
+	"strconv"
 )
 
 const(
@@ -136,4 +137,7 @@ func main() {
 		fmt.Println(solutions.Size, "solutions")
 	}
 	fmt.Println("Execution time:", elapsed)
+
+	util.PrintSolutionsToFile(solutions.GetSolutions(), "results/SA" + strconv.Itoa(size) + ".txt")
+
 }
